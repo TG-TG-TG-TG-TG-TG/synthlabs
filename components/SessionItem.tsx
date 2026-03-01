@@ -1,8 +1,9 @@
 import { useRef, useState, useEffect } from 'react';
-import { Trash2, Edit2, Cloud, HardDrive } from 'lucide-react';
+import { Trash2, Edit2, Cloud, HardDrive, Tag, ShieldCheck, CheckCircle2, Flag } from 'lucide-react';
 import { confirmService } from '../services/confirmService';
 import { SessionData, StorageMode } from '../interfaces';
 import { Environment } from '../interfaces/enums';
+import { SessionVerificationStatus } from '../interfaces/enums/SessionVerificationStatus';
 
 interface SessionItemProps {
     session: SessionData;
@@ -11,6 +12,7 @@ interface SessionItemProps {
     onSelect: (id: string) => void;
     onRename: (id: string, newName: string) => void;
     onDelete: (id: string) => void;
+    onOpenInVerifier?: (id: string) => void;
 }
 
 export default function SessionItem({
@@ -19,7 +21,8 @@ export default function SessionItem({
     isActive,
     onSelect,
     onRename,
-    onDelete
+    onDelete,
+    onOpenInVerifier
 }: SessionItemProps) {
     const [isRenaming, setIsRenaming] = useState(false);
     const [newName, setNewName] = useState(session.name || '');
@@ -62,6 +65,9 @@ export default function SessionItem({
         }
     };
 
+    const firstTag = session.tags?.[0];
+    const additionalTagsCount = (session.tags?.length || 0) - 1;
+
     return (
         <div
             onClick={() => onSelect(session.id)}
@@ -87,14 +93,35 @@ export default function SessionItem({
                     />
                 ) : (
                     <div className="flex flex-col">
-                        <h3 className={`text-sm font-semibold truncate ${isActive ? 'text-white' : 'text-slate-200'}`}>
-                            {session.name || 'Untitled Session'}
-                        </h3>
+                        <div className="flex items-center gap-2">
+                            <h3 className={`text-sm font-semibold truncate ${isActive ? 'text-white' : 'text-slate-200'}`}>
+                                {session.name || 'Untitled Session'}
+                            </h3>
+                            {session.verificationStatus === SessionVerificationStatus.Verified && (
+                                <span title="Verified"><CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" /></span>
+                            )}
+                            {session.verificationStatus === SessionVerificationStatus.Garbage && (
+                                <span title="Garbage"><Flag className="w-4 h-4 text-red-400 flex-shrink-0" /></span>
+                            )}
+                        </div>
                         <div className="flex items-center gap-2 mt-1">
                             <div className={`flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full border ${session.storageMode === StorageMode.Cloud ? 'border-sky-700/50 bg-sky-950/40 text-sky-300' : 'border-slate-700/70 bg-slate-950/50 text-slate-300'}`}>
                                 {environment === Environment.Production ? <Cloud className="w-2.5 h-2.5" /> : <HardDrive className="w-2.5 h-2.5" />}
                                 <span>{session.logCount ?? session.itemCount ?? 0}</span>
                             </div>
+                            {firstTag && (
+                                <>
+                                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-blue-900/40 text-blue-300 text-[10px] rounded border border-blue-800/50">
+                                        <Tag className="w-3 h-3" />
+                                        {firstTag.name}
+                                    </span>
+                                    {additionalTagsCount > 0 && (
+                                        <span className="text-[10px] text-slate-500">
+                                            +{additionalTagsCount}
+                                        </span>
+                                    )}
+                                </>
+                            )}
                             <span className="text-xs text-slate-400 truncate">
                                 {new Date(session.timestamp || session.updatedAt || session.createdAt || Date.now()).toLocaleDateString()} {new Date(session.timestamp || session.updatedAt || session.createdAt || Date.now()).toLocaleTimeString()}
                             </span>
@@ -105,6 +132,18 @@ export default function SessionItem({
 
             {!isRenaming && (
                 <div className="hidden group-hover:flex items-center gap-1 pointer-events-none group-hover:pointer-events-auto transition">
+                    {onOpenInVerifier && (session.logCount ?? session.itemCount ?? 0) > 0 && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onOpenInVerifier(session.id);
+                            }}
+                            className="p-1.5 hover:bg-sky-900/40 rounded text-slate-300 hover:text-sky-300"
+                            title="Open in Verifier"
+                        >
+                            <ShieldCheck className="w-3 h-3" />
+                        </button>
+                    )}
                     <button
                         onClick={(e) => {
                             e.stopPropagation();

@@ -6,6 +6,7 @@ import { Cpu, Settings, Sun, Moon } from 'lucide-react';
 
 import { Environment, ThemeMode } from '../interfaces/enums';
 import { SessionData } from '../interfaces';
+import { SessionTag } from '../interfaces/services/SessionConfig';
 import type { SessionListFilters } from '../types';
 
 interface LeftSidebarProps {
@@ -16,6 +17,7 @@ interface LeftSidebarProps {
     onSessionSelect: (id: string) => void;
     onSessionRename: (id: string, newName: string) => void;
     onSessionDelete: (id: string) => void;
+    onOpenInVerifier?: (id: string) => void;
     onRefreshSessions: () => void;
     onOpenSettings: () => void;
     currentEnvironment: Environment;
@@ -27,6 +29,7 @@ interface LeftSidebarProps {
     isLoadingMoreSessions: boolean;
     themeMode: ThemeMode;
     onThemeModeChange: (mode: ThemeMode) => void;
+    availableTags?: SessionTag[];
 }
 
 export default function LeftSidebar({
@@ -37,6 +40,7 @@ export default function LeftSidebar({
     onSessionSelect,
     onSessionRename,
     onSessionDelete,
+    onOpenInVerifier,
     onRefreshSessions,
     onOpenSettings,
     currentEnvironment,
@@ -47,7 +51,8 @@ export default function LeftSidebar({
     hasMoreSessions,
     isLoadingMoreSessions,
     themeMode,
-    onThemeModeChange
+    onThemeModeChange,
+    availableTags = []
 }: LeftSidebarProps) {
     const isDarkMode = themeMode === ThemeMode.Dark;
     const nextThemeMode = isDarkMode ? ThemeMode.Light : ThemeMode.Dark;
@@ -111,11 +116,13 @@ export default function LeftSidebar({
                     onSessionSelect={onSessionSelect}
                     onSessionRename={onSessionRename}
                     onSessionDelete={onSessionDelete}
+                    onOpenInVerifier={onOpenInVerifier}
                     filters={sessionFilters}
                     onFiltersChange={onSessionFiltersChange}
                     onLoadMore={onLoadMoreSessions}
                     hasMore={hasMoreSessions}
                     isLoadingMore={isLoadingMoreSessions}
+                    availableTags={availableTags}
                 />
             </div>
 

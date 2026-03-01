@@ -31,7 +31,9 @@ export const registerListSessionsRoute = (app, { repo }) => {
                 maxRows = '',
                 appMode = '',
                 engineMode = '',
-                model = ''
+                model = '',
+                tags = '',
+                verificationStatus = ''
             } = _req.query || {};
 
             const searchTerm = String(search).trim().toLowerCase();
@@ -39,8 +41,10 @@ export const registerListSessionsRoute = (app, { repo }) => {
             const onlyLogs = String(onlyWithLogs) === '1';
             const minRowsNum = minRows !== '' ? Number(minRows) : null;
             const maxRowsNum = maxRows !== '' ? Number(maxRows) : null;
+            const tagFilter = tags ? String(tags).split(',').filter(Boolean) : [];
+            const verificationStatusFilter = String(verificationStatus).trim();
 
-            const isFiltering = Boolean(search || onlyWithLogs || minRows !== '' || maxRows !== '' || appMode || engineMode || model);
+            const isFiltering = Boolean(search || onlyWithLogs || minRows !== '' || maxRows !== '' || appMode || engineMode || model || tagFilter.length > 0 || verificationStatusFilter);
             let currentCursor = cursor || null;
             let hasMore = false;
 
@@ -74,6 +78,15 @@ export const registerListSessionsRoute = (app, { repo }) => {
                     if (modelTerm) {
                         const modelValue = (session.config?.externalModel || session.externalModel || '').toLowerCase();
                         if (!modelValue.includes(modelTerm)) return false;
+                    }
+                    if (tagFilter.length > 0) {
+                        const sessionTagUids = (session.tags || []).map(t => t.uid || '').filter(Boolean);
+                        const hasMatchingTag = tagFilter.some(tagUid => sessionTagUids.includes(tagUid));
+                        if (!hasMatchingTag) return false;
+                    }
+                    if (verificationStatusFilter && verificationStatusFilter !== 'all') {
+                        const sessionStatus = session.verificationStatus || 'unreviewed';
+                        if (sessionStatus !== verificationStatusFilter) return false;
                     }
                     return true;
                 });

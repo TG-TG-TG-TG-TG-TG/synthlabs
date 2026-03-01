@@ -1,8 +1,10 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import SessionItem from './SessionItem';
-import { Search, Filter } from 'lucide-react';
+import { Search, Filter, X } from 'lucide-react';
 import { SessionData } from '../interfaces';
+import { SessionTag } from '../interfaces/services/SessionConfig';
 import { Environment, CreatorMode, EngineMode } from '../interfaces/enums';
+import { SessionVerificationStatus } from '../interfaces/enums/SessionVerificationStatus';
 import type { SessionListFilters } from '../types';
 
 interface SessionsListProps {
@@ -12,11 +14,13 @@ interface SessionsListProps {
     onSessionSelect: (id: string) => void;
     onSessionRename: (id: string, newName: string) => void;
     onSessionDelete: (id: string) => void;
+    onOpenInVerifier?: (id: string) => void;
     filters: SessionListFilters;
     onFiltersChange: (filters: SessionListFilters) => void;
     onLoadMore?: () => void;
     hasMore?: boolean;
     isLoadingMore?: boolean;
+    availableTags?: SessionTag[];
 }
 
 export default function SessionsList({
@@ -26,11 +30,13 @@ export default function SessionsList({
     onSessionSelect,
     onSessionRename,
     onSessionDelete,
+    onOpenInVerifier,
     filters,
     onFiltersChange,
     onLoadMore,
     hasMore = false,
-    isLoadingMore = false
+    isLoadingMore = false,
+    availableTags = []
 }: SessionsListProps) {
     const [isFiltersOpen, setIsFiltersOpen] = useState(false);
     const [draftFilters, setDraftFilters] = useState<SessionListFilters>(filters);
@@ -78,7 +84,9 @@ export default function SessionsList({
             maxRows: null,
             appMode: null,
             engineMode: null,
-            model: ''
+            model: '',
+            verificationStatus: 'all',
+            tags: []
         };
         setDraftFilters(reset);
         onFiltersChange(reset);
@@ -164,6 +172,53 @@ export default function SessionsList({
                                 className="w-full bg-slate-950 border border-slate-800/70 rounded px-2 py-1 text-xs text-slate-100"
                             />
                         </div>
+                        <div className="space-y-1">
+                            <label className="text-[10px] text-slate-300 font-bold uppercase">Verification Status</label>
+                            <select
+                                value={draftFilters.verificationStatus}
+                                onChange={(e) => setDraftFilters(prev => ({
+                                    ...prev,
+                                    verificationStatus: e.target.value as SessionListFilters['verificationStatus']
+                                }))}
+                                className="w-full bg-slate-950 border border-slate-800/70 rounded px-2 py-1 text-xs text-slate-100"
+                            >
+                                <option value="all">All</option>
+                                <option value="verified">Verified Only</option>
+                                <option value="unreviewed">Unreviewed Only</option>
+                                <option value="garbage">Garbage Only</option>
+                            </select>
+                        </div>
+                        {availableTags && availableTags.length > 0 && (
+                            <div className="space-y-2">
+                                <label className="text-[10px] text-slate-300 font-bold uppercase">Filter by Tags</label>
+                                <div className="flex flex-wrap gap-1">
+                                    {availableTags.map(tag => {
+                                        const isSelected = draftFilters.tags.includes(tag.uid);
+                                        return (
+                                            <button
+                                                key={tag.uid}
+                                                onClick={() => {
+                                                    setDraftFilters(prev => ({
+                                                        ...prev,
+                                                        tags: isSelected
+                                                            ? prev.tags.filter(t => t !== tag.uid)
+                                                            : [...prev.tags, tag.uid]
+                                                    }));
+                                                }}
+                                                className={`inline-flex items-center gap-1 px-2 py-1 text-[10px] rounded border transition-colors ${
+                                                    isSelected
+                                                        ? 'bg-sky-600/30 border-sky-500/50 text-sky-300'
+                                                        : 'bg-slate-950/60 border-slate-700/70 text-slate-400 hover:bg-slate-900/60'
+                                                }`}
+                                            >
+                                                {tag.name}
+                                                {isSelected && <X className="w-3 h-3" />}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
                                 <label className="text-[10px] text-slate-300 font-bold uppercase">Rows</label>
@@ -249,6 +304,7 @@ export default function SessionsList({
                             onSelect={onSessionSelect}
                             onRename={onSessionRename}
                             onDelete={onSessionDelete}
+                            onOpenInVerifier={onOpenInVerifier}
                         />
                     ))
                 )}
