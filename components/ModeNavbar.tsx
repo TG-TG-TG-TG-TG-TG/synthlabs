@@ -1,13 +1,13 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { AppMode } from '../interfaces/enums/AppMode';
 import { confirmService } from '../services/confirmService';
-import { Sparkles, ShieldCheck } from 'lucide-react';
+import { Sparkles, ShieldCheck, Layers } from 'lucide-react';
 import { SessionTag } from '../interfaces/services/SessionConfig';
 import TagSelector from './TagSelector';
 
 interface ModeNavbarProps {
-    currentMode: AppView;
-    onModeChange: (mode: AppView) => void;
+    currentMode: AppMode;
+    onModeChange: (mode: AppMode) => void;
     sessionName: string | null;
     onSessionNameChange: (name: string | null) => void | Promise<void>;
     isDirty: boolean;
@@ -38,7 +38,7 @@ export default function ModeNavbar({
         setDraftSessionName(sessionName || '');
     }, [sessionName]);
 
-    const handleModeChange = async (newMode: AppView) => {
+    const handleModeChange = async (newMode: AppMode) => {
         if (currentMode === newMode) return;
 
         if (isDirty) {
@@ -57,8 +57,8 @@ export default function ModeNavbar({
         <nav className="flex items-center justify-between px-4 py-3 bg-slate-950/80 border-b border-slate-800/70 backdrop-blur-xl">
             <div className="flex gap-2 rounded-lg bg-slate-950/70 border border-slate-800/70 p-1">
                 <button
-                    onClick={() => handleModeChange(AppView.Creator)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all font-semibold text-sm ${currentMode === AppView.Creator
+                    onClick={() => handleModeChange(AppMode.Creator)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all font-semibold text-sm ${currentMode === AppMode.Creator
                         ? 'bg-slate-100 text-slate-900 shadow-sm'
                         : 'text-slate-300 hover:text-slate-100 hover:bg-slate-900/60'
                         }`}
@@ -67,8 +67,8 @@ export default function ModeNavbar({
                     Creator
                 </button>
                 <button
-                    onClick={() => handleModeChange(AppView.Verifier)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all font-semibold text-sm ${currentMode === AppView.Verifier
+                    onClick={() => handleModeChange(AppMode.Verifier)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all font-semibold text-sm ${currentMode === AppMode.Verifier
                         ? 'bg-slate-100 text-slate-900 shadow-sm'
                         : 'text-slate-300 hover:text-slate-100 hover:bg-slate-900/60'
                         }`}
@@ -77,8 +77,8 @@ export default function ModeNavbar({
                     Verifier
                 </button>
                 <button
-                    onClick={() => handleModeChange(AppView.BatchDebugger)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all font-semibold text-sm ${currentMode === AppView.BatchDebugger
+                    onClick={() => handleModeChange(AppMode.BatchDebugger)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all font-semibold text-sm ${currentMode === AppMode.BatchDebugger
                         ? 'bg-slate-100 text-slate-900 shadow-sm'
                         : 'text-slate-300 hover:text-slate-100 hover:bg-slate-900/60'
                         }`}
