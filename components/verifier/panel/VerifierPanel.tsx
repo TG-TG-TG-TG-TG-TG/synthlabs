@@ -663,7 +663,7 @@ export default function VerifierPanel({ currentSessionUid, modelConfig, onSessio
         } finally {
             setIsImporting(false);
         }
-    }, [availableSessions]);
+    }, [availableSessions, isLimitEnabled, importLimit]);
 
     useEffect(() => {
         if (initialSessionId && hasLoadedInitialSessionRef.current !== initialSessionId) {
