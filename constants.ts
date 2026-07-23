@@ -102,9 +102,7 @@ export const PROVIDERS: Record<string, ProviderConfig> = {
     description: 'MiniMax models via Anthropic-compatible API'
   },
   'nvidia': {
-    url: import.meta.env.DEV
-      ? '/nvidia-api'
-      : 'https://integrate.api.nvidia.com/v1',
+    url: 'https://integrate.api.nvidia.com',
     name: 'NVIDIA NIM',
     description: 'NVIDIA NIM inference microservices'
   },
